@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云霄语音卡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background-image: url('./images/bg-min.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            overflow-x: hidden;
+            padding: 1.25rem 0;
+        }
+
+        .header-logo {
+            width: 11.25rem;
+            /* 180px ÷ 16 = 11.25rem */
+            height: auto;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-logo {
+            width: 17.5rem;
+            /* 280px ÷ 16 = 17.5rem */
+            height: auto;
+            margin-bottom: 1.5rem;
+
+        }
+
+        .audio-player {
+            margin-top: 3rem;
+            position: relative;
+            max-width: 90vw;
+            padding: 1.5625rem;
+            /* 25px ÷ 16 = 1.5625rem */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+
+
+        .cover-container {
+            position: relative;
+            width: 20.75rem;
+            /* 220px ÷ 16 = 13.75rem */
+            height: 20.75rem;
+            /* 220px ÷ 16 = 13.75rem */
+            margin: 0 auto 1.5625rem;
+            /* 25px ÷ 16 = 1.5625rem */
+        }
+
+        .cover-box {
+            width: 100%;
+            height: 100%;
+            background-image: url('./images/cover-box.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+            filter: drop-shadow(0 0.25rem 0.5rem rgba(0, 0, 0, 0.3));
+            /* 4px, 8px */
+        }
+
+        .cover {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10.625rem;
+            /* 170px ÷ 16 = 10.625rem */
+            height: 10.625rem;
+            /* 170px ÷ 16 = 10.625rem */
+            border-radius: 50%;
+            background-image: url('./images/cover.png');
+            background-size: cover;
+            background-position: center;
+            animation: rotate 12s linear infinite;
+            animation-play-state: paused;
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.4);
+            /* 4px, 12px */
+            transition: box-shadow 0.3s ease;
+        }
+
+        .cover.playing {
+            animation-play-state: running;
+            box-shadow: 0 0.375rem 1rem rgba(0, 0, 0, 0.5);
+            /* 6px, 16px */
+        }
+
+        @keyframes rotate {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .decorate {
+            position: absolute;
+            top: -0.9375rem;
+            /* -15px ÷ 16 = -0.9375rem */
+            right: -0.9375rem;
+            /* -15px ÷ 16 = -0.9375rem */
+            width: 2.5rem;
+            /* 40px ÷ 16 = 2.5rem */
+            height: 9.375rem;
+            /* 150px ÷ 16 = 9.375rem */
+            background-image: url('./images/decorate.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-0.3125rem);
+                /* -5px ÷ 16 = -0.3125rem */
+            }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5625rem;
+            /* 25px ÷ 16 = 1.5625rem */
+            margin-bottom: 1rem;
+            /* 减少底部边距 */
+        }
+
+        .control-btn {
+            width: 3.4375rem;
+            /* 55px ÷ 16 = 3.4375rem */
+            height: 3.4375rem;
+            /* 55px ÷ 16 = 3.4375rem */
+            background: none;
+            border: none;
+            cursor: pointer;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.3s ease;
+
+            border-radius: 50%;
+        }
+
+
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-btn {
+            background-image: url('./images/play.png');
+        }
+
+        .pause-btn {
+            background-image: url('./images/pause.png');
+        }
+
+        .speed-btn {
+            width: 2.5rem;
+            /* 40px ÷ 16 = 2.5rem */
+            height: 2.5rem;
+            /* 40px ÷ 16 = 2.5rem */
+            background-size: contain;
+        }
+
+        .speed-down {
+            background-image: url('./images/15-.png');
+        }
+
+        .speed-up {
+            background-image: url('./images/15+.png');
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 0.5rem;
+            /* 8px ÷ 16 = 0.5rem */
+            background: rgb(255, 255, 255);
+            border-radius: 0.25rem;
+            /* 4px ÷ 16 = 0.25rem */
+            margin-bottom: 0.75rem;
+            /* 减少底部边距 */
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            /* 2px, 4px */
+        }
+
+        .progress-container:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #a7b6c2;
+            border-radius: 0.25rem;
+            /* 4px ÷ 16 = 0.25rem */
+            width: 0%;
+            transition: width 0.1s ease;
+            position: relative;
+            /* 2px, 4px */
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            color: #a7b6c2;
+            font-size: 0.8125rem;
+            /* 13px ÷ 16 = 0.8125rem */
+         
+            font-weight: 500;
+         
+            /* 1px, 2px */
+        }
+
+        /* 文字切图容器样式 */
+        .lyrics-container {
+            width: 100%;
+            max-width: 25rem;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .lyrics-image {
+            width: 100%;
+            max-width: 20rem;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .lyrics-image.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.02);
+        }
+
+        .lyrics-image.fade-in {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .lyrics-image.fade-out {
+            animation: fadeOutDown 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(1rem);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0);
+            }
+        }
+
+        @keyframes fadeOutDown {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(-1rem);
+            }
+        }
+
+        /* 底部控制面板样式 */
+        .bottom-control-panel {
+            position: fixed;
+            bottom: 2rem;
+            /* 距离底部2rem */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 25rem;
+            padding: 1.25rem;
+            /* 8px, 32px */
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="./images/header-logo.png" alt="云霄语音卡" class="header-logo">
+    <img src="./images/text-logo.png" alt="语音卡标题" class="text-logo">
+
+    <div class="audio-player">
+
+        <div class="cover-container">
+            <div class="cover-box">
+                <div class="cover" id="coverImage"></div>
+                <div class="decorate"></div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- 文字切图区域 -->
+    <div class="lyrics-container" id="lyricsContainer">
+        <img src="./images/song/1.png" alt="哈喽，你好呀，好久不见" class="lyrics-image active" data-index="0">
+        <img src="./images/song/2.png" alt="我是浴见品质代言人李云霄" class="lyrics-image" data-index="1">
+        <img src="./images/song/3.png" alt="谢谢你的喜爱和陪伴" class="lyrics-image" data-index="2">
+        <img src="./images/song/4.png" alt="也谢谢你见证了我的成长" class="lyrics-image" data-index="3">
+        <img src="./images/song/5.png" alt="不管你们在哪，我就在这儿啦" class="lyrics-image" data-index="4">
+        <img src="./images/song/6.png" alt="愿你我向内生长，向外绽放" class="lyrics-image" data-index="5">
+        <img src="./images/song/7.png" alt="浴见身体里的自己" class="lyrics-image" data-index="6">
+    </div>
+
+    <!-- 底部控制面板 -->
+    <div class="bottom-control-panel">
+
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="time-display">
+            <span id="currentTime">00:00</span>
+            <span id="speedDisplay" style="display: none; font-size: 0.6875rem; opacity: 0.7;">1.0x</span>
+            <!-- 11px ÷ 16 = 0.6875rem -->
+            <span id="totalTime">00:00</span>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn speed-btn speed-down" id="speedDown" title="减速播放"></button>
+            <button class="control-btn play-btn" id="playPauseBtn" title="播放/暂停"></button>
+            <button class="control-btn speed-btn speed-up" id="speedUp" title="加速播放"></button>
+        </div>
+
+
+    </div>
+
+
+    <audio id="audioPlayer" preload="metadata">
+        <source src="./bgm/bgm.MP3" type="audio/mpeg">
+
+    </audio>
+
+    <script>
+        class AudioPlayerController {
+            constructor() {
+                this.audioPlayer = document.getElementById('audioPlayer');
+                this.playPauseBtn = document.getElementById('playPauseBtn');
+                this.coverImage = document.getElementById('coverImage');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressContainer = document.getElementById('progressContainer');
+                this.currentTimeDisplay = document.getElementById('currentTime');
+                this.totalTimeDisplay = document.getElementById('totalTime');
+                this.speedDownBtn = document.getElementById('speedDown');
+                this.speedUpBtn = document.getElementById('speedUp');
+                this.speedDisplay = document.getElementById('speedDisplay');
+                this.lyricsContainer = document.getElementById('lyricsContainer');
+                this.lyricsImages = document.querySelectorAll('.lyrics-image');
+
+                this.isPlaying = false;
+                this.currentSpeed = 1.0;
+                this.isDragging = false;
+                this.currentLyricsIndex = 0;
+                this.lyricsTimings = []; // 存储每张图片的显示时间点
+
+                console.log('初始化音频播放器控制器');
+                console.log('文字切图元素数量:', this.lyricsImages.length);
+
+                this.initializeEventListeners();
+                this.checkAudioSource();
+                this.updateSpeedDisplay();
+                this.initializeLyricsTimings();
+            }
+
+            initializeEventListeners() {
+                // 播放/暂停按钮
+                this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+
+                // 进度条交互
+                this.progressContainer.addEventListener('click', (e) => this.seekAudio(e));
+                this.progressContainer.addEventListener('mousedown', (e) => this.startDrag(e));
+                document.addEventListener('mousemove', (e) => this.onDrag(e));
+                document.addEventListener('mouseup', () => this.endDrag());
+
+                // 速度控制
+                this.speedDownBtn.addEventListener('click', () => this.changeSpeed(-0.25));
+                this.speedUpBtn.addEventListener('click', () => this.changeSpeed(0.25));
+
+                // 音频事件
+                this.audioPlayer.addEventListener('loadedmetadata', () => this.updateTotalTime());
+                this.audioPlayer.addEventListener('timeupdate', () => {
+                    this.updateProgress();
+                    this.updateLyrics();
+                });
+                this.audioPlayer.addEventListener('ended', () => this.onAudioEnded());
+                this.audioPlayer.addEventListener('error', (e) => this.onAudioError(e));
+                this.audioPlayer.addEventListener('canplay', () => this.onAudioReady());
+
+                // 键盘快捷键
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+
+            togglePlayPause() {
+                if (this.isPlaying) {
+                    this.pauseAudio();
+                } else {
+                    this.playAudio();
+                }
+            }
+
+            playAudio() {
+                this.audioPlayer.play();
+                this.isPlaying = true;
+                this.playPauseBtn.className = 'control-btn pause-btn';
+                this.coverImage.classList.add('playing');
+                // 播放时立即更新文字切图
+                this.updateLyrics();
+            }
+
+            pauseAudio() {
+                this.audioPlayer.pause();
+                this.isPlaying = false;
+                this.playPauseBtn.className = 'control-btn play-btn';
+                this.coverImage.classList.remove('playing');
+            }
+
+            changeSpeed(delta) {
+                this.currentSpeed = Math.max(0.25, Math.min(2.0, this.currentSpeed + delta));
+                this.audioPlayer.playbackRate = this.currentSpeed;
+                this.updateSpeedDisplay();
+            }
+
+            updateSpeedDisplay() {
+                if (this.speedDisplay) {
+                    this.speedDisplay.textContent = this.currentSpeed.toFixed(2) + 'x';
+                }
+            }
+
+            seekAudio(e) {
+                const rect = this.progressContainer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                const newTime = percentage * this.audioPlayer.duration;
+                this.audioPlayer.currentTime = newTime;
+            }
+
+            updateProgress() {
+                if (this.audioPlayer.duration) {
+                    const percentage = (this.audioPlayer.currentTime / this.audioPlayer.duration) * 100;
+                    this.progressBar.style.width = percentage + '%';
+                    this.currentTimeDisplay.textContent = this.formatTime(this.audioPlayer.currentTime);
+                }
+            }
+
+            updateTotalTime() {
+                this.totalTimeDisplay.textContent = this.formatTime(this.audioPlayer.duration);
+            }
+
+            formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+
+            onAudioEnded() {
+                this.isPlaying = false;
+                this.playPauseBtn.className = 'control-btn play-btn';
+                this.coverImage.classList.remove('playing');
+                this.progressBar.style.width = '0%';
+                this.audioPlayer.currentTime = 0;
+                this.resetLyrics(); // 重置文字切图到第一张
+            }
+
+            checkAudioSource() {
+                if (this.audioPlayer.children.length === 0) {
+                    console.log('请添加音频文件');
+                    this.playPauseBtn.style.opacity = '0.5';
+                    this.playPauseBtn.style.cursor = 'not-allowed';
+                } else {
+                    console.log('音频文件已加载');
+                }
+            }
+
+            onAudioError(e) {
+                console.error('音频加载错误:', e);
+                this.playPauseBtn.style.opacity = '0.5';
+                this.playPauseBtn.style.cursor = 'not-allowed';
+            }
+
+            onAudioReady() {
+                console.log('音频准备就绪');
+                this.playPauseBtn.style.opacity = '1';
+                this.playPauseBtn.style.cursor = 'pointer';
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                this.seekAudio(e);
+            }
+
+            onDrag(e) {
+                if (this.isDragging) {
+                    this.seekAudio(e);
+                }
+            }
+
+            endDrag() {
+                this.isDragging = false;
+            }
+
+            handleKeyboard(e) {
+                switch (e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        this.togglePlayPause();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        this.audioPlayer.currentTime = Math.max(0, this.audioPlayer.currentTime - 10);
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        this.audioPlayer.currentTime = Math.min(this.audioPlayer.duration, this.audioPlayer.currentTime + 10);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        this.changeSpeed(0.25);
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        this.changeSpeed(-0.25);
+                        break;
+                }
+            }
+
+            // 初始化文字切图时间点
+            initializeLyricsTimings() {
+                // 先设置默认时间间隔（假设3分钟的歌曲）
+                this.lyricsTimings = [0, 25, 50, 75, 100, 125, 150];
+
+                // 监听音频元数据加载完成
+                this.audioPlayer.addEventListener('loadedmetadata', () => {
+                    const duration = this.audioPlayer.duration;
+                    console.log('音频时长:', duration);
+                    if (duration && duration > 0) {
+                        // 平均分配时间，每张图片显示约 duration/7 的时间
+                        const interval = duration / 7;
+                        this.lyricsTimings = [];
+                        for (let i = 0; i < 7; i++) {
+                            this.lyricsTimings.push(i * interval);
+                        }
+                        console.log('文字切图时间点:', this.lyricsTimings);
+                    }
+                });
+
+                // 监听音频可以播放时也尝试获取时长
+                this.audioPlayer.addEventListener('canplay', () => {
+                    if (this.audioPlayer.duration && this.lyricsTimings.length === 7 && this.lyricsTimings[0] === 0 && this.lyricsTimings[1] === 25) {
+                        const duration = this.audioPlayer.duration;
+                        const interval = duration / 7;
+                        this.lyricsTimings = [];
+                        for (let i = 0; i < 7; i++) {
+                            this.lyricsTimings.push(i * interval);
+                        }
+                        console.log('更新文字切图时间点:', this.lyricsTimings);
+                    }
+                });
+            }
+
+            // 更新文字切图显示
+            updateLyrics() {
+                if (this.lyricsTimings.length === 0) {
+                    console.log('文字切图时间点未初始化');
+                    return;
+                }
+
+                const currentTime = this.audioPlayer.currentTime;
+                let targetIndex = 0;
+
+                // 找到当前时间应该显示的图片索引
+                for (let i = this.lyricsTimings.length - 1; i >= 0; i--) {
+                    if (currentTime >= this.lyricsTimings[i]) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+
+                // 如果需要切换图片
+                if (targetIndex !== this.currentLyricsIndex) {
+                    console.log(`切换文字切图: ${this.currentLyricsIndex} -> ${targetIndex}, 当前时间: ${currentTime.toFixed(2)}s`);
+                    this.switchLyricsImage(targetIndex);
+                }
+            }
+
+            // 切换文字切图
+            switchLyricsImage(newIndex) {
+                if (newIndex < 0 || newIndex >= this.lyricsImages.length) {
+                    console.log('无效的图片索引:', newIndex);
+                    return;
+                }
+
+                console.log('执行图片切换:', this.currentLyricsIndex, '->', newIndex);
+
+                const currentImage = this.lyricsImages[this.currentLyricsIndex];
+                const newImage = this.lyricsImages[newIndex];
+
+                // 移除当前图片的active类，添加fade-out动画
+                currentImage.classList.remove('active', 'fade-in');
+                currentImage.classList.add('fade-out');
+
+                // 延迟显示新图片，创建平滑过渡效果
+                setTimeout(() => {
+                    currentImage.classList.remove('fade-out');
+                    newImage.classList.add('active', 'fade-in');
+
+                    // 清理动画类
+                    setTimeout(() => {
+                        newImage.classList.remove('fade-in');
+                    }, 800);
+                }, 200);
+
+                this.currentLyricsIndex = newIndex;
+            }
+
+            // 重置文字切图到第一张
+            resetLyrics() {
+                this.lyricsImages.forEach((img, index) => {
+                    img.classList.remove('active', 'fade-in', 'fade-out');
+                    if (index === 0) {
+                        img.classList.add('active');
+                    }
+                });
+                this.currentLyricsIndex = 0;
+            }
+        }
+
+        // 初始化播放器
+        document.addEventListener('DOMContentLoaded', () => {
+            new AudioPlayerController();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>云霄语音卡</title>
+    <style>
+        @keyframes rotate {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        :root {
+            --header-logo-size: clamp(7rem, 40vw, 11.25rem);
+            --text-logo-size: clamp(11rem, 70vw, 17.5rem);
+            --cover-size: clamp(12rem, 80vw, 20.75rem);
+            --lyrics-height: clamp(6rem, 25vw, 12rem);
+            --lyrics-image-max-width: clamp(12rem, 80vw, 20rem);
+            --panel-padding: clamp(0.5rem, 3vw, 1rem);
+            --controls-gap: clamp(0.5rem, 4vw, 1.5625rem);
+            --control-btn-size: clamp(2.5rem, 8vw, 3.4375rem);
+            --speed-btn-size: clamp(2rem, 6vw, 2.5rem);
+            --progress-height: clamp(0.25rem, 1vw, 0.5rem);
+
+            :root {
+                --vh: 1vh;
+                --header-logo-size: clamp(7rem, 15vh, 11.25rem);
+                --text-logo-size: clamp(10rem, 18vh, 17.5rem);
+                --cover-size: clamp(12rem, 30vh, 20.75rem);
+                --lyrics-height: clamp(5rem, 12vh, 12rem);
+                --lyrics-image-max-width: clamp(12rem, 80vw, 20rem);
+                --panel-padding: clamp(0.5rem, 3vw, 1rem);
+                --controls-gap: clamp(0.5rem, 4vw, 1.5625rem);
+                --control-btn-size: clamp(2.5rem, 8vw, 3.4375rem);
+                --speed-btn-size: clamp(2rem, 6vw, 2.5rem);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                width: 100vw;
+                height: 100vh;
+                height: calc(var(--vh, 1vh) * 100);
+                background-image: url('./images/bg-min.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Microsoft YaHei', Arial, sans-serif;
+                overflow: hidden;
+                padding: 0.5rem;
+                box-sizing: border-box;
+            }
+
+            .header-logo {
+                width: var(--header-logo-size);
+                height: auto;
+                margin-bottom: clamp(1rem, 3vh, 2rem);
+            }
+
+            .text-logo {
+                width: var(--text-logo-size);
+                height: auto;
+                margin-bottom: clamp(1rem, 3vh, 2rem);
+            }
+
+            .audio-player {
+                position: relative;
+                width: 100%;
+                max-width: min(90vw, 25rem);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .cover-container {
+                position: relative;
+                width: var(--cover-size);
+                height: var(--cover-size);
+                margin: 0 auto clamp(1rem, 3vh, 2rem);
+            }
+
+            .cover-box {
+                width: 100%;
+                height: 100%;
+                background-image: url('./images/cover-box.png');
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+                position: relative;
+                filter: drop-shadow(0 0.25rem 0.5rem rgba(0, 0, 0, 0.3));
+            }
+
+            .cover {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 70%;
+                height: 70%;
+                border-radius: 50%;
+                background-image: url('./images/cover.png');
+                background-size: cover;
+                background-position: center;
+                animation: rotate 12s linear infinite;
+                animation-play-state: paused;
+                box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.4);
+            }
+
+            .cover.playing {
+                animation-play-state: running;
+            }
+
+
+            .decorate {
+                position: absolute;
+                top: -0.9375rem;
+                right: -0.9375rem;
+                width: 2.5rem;
+                height: 9.375rem;
+                background-image: url('./images/decorate.png');
+                background-size: contain;
+                background-repeat: no-repeat;
+                animation: float 3s ease-in-out infinite;
+            }
+
+            @keyframes float {
+
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+
+                50% {
+                    transform: translateY(-0.3125rem);
+                }
+            }
+
+            .lyrics-container {
+                width: 100%;
+                max-width: min(25rem, 90vw);
+                margin: 0 auto clamp(1rem, 3vh, 2rem);
+                padding: 0 1rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                height: var(--lyrics-height);
+                margin-bottom: 5rem;
+            }
+
+            .lyrics-image {
+                width: 100%;
+                max-width: var(--lyrics-image-max-width);
+                height: auto;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                opacity: 0;
+                transition: opacity 0.8s ease, transform 0.8s ease;
+            }
+
+            .lyrics-image.active {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.02);
+            }
+
+            .lyrics-image.fade-in {
+                animation: fadeInUp 0.8s ease forwards;
+            }
+
+            .lyrics-image.fade-out {
+                animation: fadeOutDown 0.8s ease forwards;
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) translateY(1rem);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) translateY(0);
+                }
+            }
+
+            @keyframes fadeOutDown {
+                from {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) translateY(0);
+                }
+
+                to {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) translateY(-1rem);
+                }
+            }
+
+            .bottom-control-panel {
+                position: fixed;
+                bottom: max(1rem, env(safe-area-inset-bottom));
+                left: 50%;
+                transform: translateX(-50%);
+                width: 95%;
+                max-width: min(25rem, 95vw);
+                padding: var(--panel-padding);
+                z-index: 1000;
+                border-radius: 1rem;
+            }
+
+            .controls {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: var(--controls-gap);
+                margin-bottom: 0.5rem;
+            }
+
+            .control-btn {
+                width: var(--control-btn-size);
+                height: var(--control-btn-size);
+                background: none;
+                border: none;
+                cursor: pointer;
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+                transition: all 0.3s ease;
+                border-radius: 50%;
+            }
+
+            .control-btn:active {
+                transform: scale(0.95);
+            }
+
+            .play-btn {
+                background-image: url('./images/play.png');
+            }
+
+            .pause-btn {
+                background-image: url('./images/pause.png');
+            }
+
+            .speed-btn {
+                width: var(--speed-btn-size);
+                height: var(--speed-btn-size);
+                background-size: contain;
+            }
+
+            .speed-down {
+                background-image: url('./images/15-.png');
+            }
+
+            .speed-up {
+                background-image: url('./images/15+.png');
+            }
+
+            .progress-container {
+                width: 100%;
+                height: clamp(0.25rem, 1vw, 0.5rem);
+                background: rgb(255, 255, 255);
+                border-radius: 0.25rem;
+                margin-bottom: 0.5rem;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .progress-bar {
+                height: 100%;
+                background: #a7b6c2;
+                border-radius: 0.25rem;
+                width: 0%;
+                transition: width 0.1s ease;
+            }
+
+            .time-display {
+                display: flex;
+                justify-content: space-between;
+                color: #a7b6c2;
+                font-size: clamp(0.75rem, 2vw, 0.8125rem);
+                font-weight: 500;
+            }
+
+            /* Specific adjustments for small height screens like iPhone SE */
+            @media (max-height: 700px) and (max-width: 480px) {
+                :root {
+                    --header-logo-size: 6rem;
+                    --text-logo-size: 9rem;
+                    --cover-size: 10rem;
+                    --lyrics-height: 4rem;
+                    --control-btn-size: 2.5rem;
+                    --speed-btn-size: 2rem;
+                }
+
+                .header-logo,
+                .text-logo,
+                .cover-container,
+                .lyrics-container {
+                    margin-bottom: 0.75rem;
+                }
+            }
+    </style>
+</head>
+
+<body>
+    <img src="./images/header-logo.png" alt="云霄语音卡" class="header-logo">
+    <img src="./images/text-logo.png" alt="语音卡标题" class="text-logo">
+
+    <div class="audio-player">
+        <div class="cover-container">
+            <div class="cover-box">
+                <div class="cover" id="coverImage"></div>
+                <div class="decorate"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文字切图区域 -->
+    <div class="lyrics-container" id="lyricsContainer">
+        <img src="./images/song/1.png" alt="哈喽，你好呀，好久不见" class="lyrics-image" data-index="0">
+        <img src="./images/song/2.png" alt="我是浴见品质代言人李云霄" class="lyrics-image" data-index="1">
+        <img src="./images/song/3.png" alt="谢谢你的喜爱和陪伴" class="lyrics-image" data-index="2">
+        <img src="./images/song/4.png" alt="也谢谢你见证了我的成长" class="lyrics-image" data-index="3">
+        <img src="./images/song/5.png" alt="不管你们在哪，我就在这儿啦" class="lyrics-image" data-index="4">
+        <img src="./images/song/6.png" alt="愿你我向内生长，向外绽放" class="lyrics-image" data-index="5">
+        <img src="./images/song/7.png" alt="浴见身体里的自己" class="lyrics-image" data-index="6">
+    </div>
+
+    <!-- 底部控制面板 -->
+    <div class="bottom-control-panel">
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="time-display">
+            <span id="currentTime">00:00</span>
+            <span id="speedDisplay" style="display: none; font-size: 0.6875rem; opacity: 0.7;">1.0x</span>
+            <span id="totalTime">00:00</span>
+        </div>
+        <div class="controls">
+            <button class="control-btn speed-btn speed-down" id="speedDown" title="减速播放"></button>
+            <button class="control-btn play-btn" id="playPauseBtn" title="播放/暂停"></button>
+            <button class="control-btn speed-btn speed-up" id="speedUp" title="加速播放"></button>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" preload="metadata">
+        <source src="./bgm/bgm.MP3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Set VH unit for mobile browsers
+        function setVhUnit() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        window.addEventListener('resize', setVhUnit);
+        window.addEventListener('orientationchange', setVhUnit);
+        setVhUnit();
+
+        class AudioPlayerController {
+            constructor() {
+                this.audioPlayer = document.getElementById('audioPlayer');
+                this.playPauseBtn = document.getElementById('playPauseBtn');
+                this.coverImage = document.getElementById('coverImage');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressContainer = document.getElementById('progressContainer');
+                this.currentTimeDisplay = document.getElementById('currentTime');
+                this.totalTimeDisplay = document.getElementById('totalTime');
+                this.speedDownBtn = document.getElementById('speedDown');
+                this.speedUpBtn = document.getElementById('speedUp');
+                this.speedDisplay = document.getElementById('speedDisplay');
+                this.lyricsContainer = document.getElementById('lyricsContainer');
+                this.lyricsImages = document.querySelectorAll('.lyrics-image');
+
+                this.isPlaying = false;
+                this.currentSpeed = 1.0;
+                this.isDragging = false;
+                this.currentLyricsIndex = -1; // 改为-1，表示初始状态没有激活的图片
+                this.lyricsTimings = [];
+
+                this.initializeEventListeners();
+                this.checkAudioSource();
+                this.updateSpeedDisplay();
+                this.initializeLyricsTimings();
+            }
+
+            initializeEventListeners() {
+                this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+                this.progressContainer.addEventListener('click', (e) => this.seekAudio(e));
+                this.progressContainer.addEventListener('mousedown', (e) => this.startDrag(e));
+                document.addEventListener('mousemove', (e) => this.onDrag(e));
+                document.addEventListener('mouseup', () => this.endDrag());
+                this.speedDownBtn.addEventListener('click', () => this.changeSpeed(-0.25));
+                this.speedUpBtn.addEventListener('click', () => this.changeSpeed(0.25));
+                this.audioPlayer.addEventListener('loadedmetadata', () => this.updateTotalTime());
+                this.audioPlayer.addEventListener('timeupdate', () => {
+                    this.updateProgress();
+                    this.updateLyrics();
+                });
+                this.audioPlayer.addEventListener('ended', () => this.onAudioEnded());
+                this.audioPlayer.addEventListener('error', (e) => this.onAudioError(e));
+                this.audioPlayer.addEventListener('canplay', () => this.onAudioReady());
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+
+            togglePlayPause() {
+                if (this.isPlaying) {
+                    this.pauseAudio();
+                } else {
+                    this.playAudio();
+                }
+            }
+
+            playAudio() {
+                this.audioPlayer.play();
+                this.isPlaying = true;
+                this.playPauseBtn.className = 'control-btn pause-btn';
+                this.coverImage.classList.add('playing');
+                this.updateLyrics();
+            }
+
+            pauseAudio() {
+                this.audioPlayer.pause();
+                this.isPlaying = false;
+                this.playPauseBtn.className = 'control-btn play-btn';
+                this.coverImage.classList.remove('playing');
+            }
+
+            changeSpeed(delta) {
+                this.currentSpeed = Math.max(0.25, Math.min(2.0, this.currentSpeed + delta));
+                this.audioPlayer.playbackRate = this.currentSpeed;
+                this.updateSpeedDisplay();
+            }
+
+            updateSpeedDisplay() {
+                if (this.speedDisplay) {
+                    this.speedDisplay.textContent = this.currentSpeed.toFixed(2) + 'x';
+                }
+            }
+
+            seekAudio(e) {
+                const rect = this.progressContainer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                const newTime = percentage * this.audioPlayer.duration;
+                this.audioPlayer.currentTime = newTime;
+            }
+
+            updateProgress() {
+                if (this.audioPlayer.duration) {
+                    const percentage = (this.audioPlayer.currentTime / this.audioPlayer.duration) * 100;
+                    this.progressBar.style.width = percentage + '%';
+                    this.currentTimeDisplay.textContent = this.formatTime(this.audioPlayer.currentTime);
+                }
+            }
+
+            updateTotalTime() {
+                this.totalTimeDisplay.textContent = this.formatTime(this.audioPlayer.duration);
+            }
+
+            formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+
+            onAudioEnded() {
+                this.isPlaying = false;
+                this.playPauseBtn.className = 'control-btn play-btn';
+                this.coverImage.classList.remove('playing');
+                this.progressBar.style.width = '0%';
+                this.audioPlayer.currentTime = 0;
+                this.resetLyrics();
+            }
+
+            checkAudioSource() {
+                if (this.audioPlayer.children.length === 0) {
+                    this.playPauseBtn.style.opacity = '0.5';
+                    this.playPauseBtn.style.cursor = 'not-allowed';
+                }
+            }
+
+            onAudioError(e) {
+                console.error('音频加载错误:', e);
+                this.playPauseBtn.style.opacity = '0.5';
+                this.playPauseBtn.style.cursor = 'not-allowed';
+            }
+
+            onAudioReady() {
+                this.playPauseBtn.style.opacity = '1';
+                this.playPauseBtn.style.cursor = 'pointer';
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                this.seekAudio(e);
+            }
+
+            onDrag(e) {
+                if (this.isDragging) {
+                    this.seekAudio(e);
+                }
+            }
+
+            endDrag() {
+                this.isDragging = false;
+            }
+
+            handleKeyboard(e) {
+                switch (e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        this.togglePlayPause();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        this.audioPlayer.currentTime = Math.max(0, this.audioPlayer.currentTime - 10);
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        this.audioPlayer.currentTime = Math.min(this.audioPlayer.duration, this.audioPlayer.currentTime + 10);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        this.changeSpeed(0.25);
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        this.changeSpeed(-0.25);
+                        break;
+                }
+            }
+
+            initializeLyricsTimings() {
+                this.audioPlayer.addEventListener('loadedmetadata', () => {
+                    const duration = this.audioPlayer.duration;
+                    if (duration && duration > 0) {
+                        const interval = duration / this.lyricsImages.length;
+                        this.lyricsTimings = Array.from({ length: this.lyricsImages.length }, (_, i) => i * interval);
+                    }
+                });
+            }
+
+            updateLyrics() {
+                if (this.lyricsTimings.length === 0 || !this.isPlaying) return;
+
+                const currentTime = this.audioPlayer.currentTime;
+                let targetIndex = this.lyricsTimings.findIndex(time => currentTime < time) - 1;
+                if (targetIndex === -2) targetIndex = this.lyricsTimings.length - 1;
+                if (targetIndex < 0) targetIndex = 0;
+
+                if (targetIndex !== this.currentLyricsIndex) {
+                    this.switchLyricsImage(targetIndex);
+                }
+            }
+
+            switchLyricsImage(newIndex) {
+                if (newIndex < 0 || newIndex >= this.lyricsImages.length) return;
+
+                // 如果当前有激活的图片，先隐藏它
+                if (this.currentLyricsIndex >= 0) {
+                    const currentImage = this.lyricsImages[this.currentLyricsIndex];
+                    currentImage.classList.remove('active', 'fade-in');
+                    currentImage.classList.add('fade-out');
+                }
+
+                const newImage = this.lyricsImages[newIndex];
+                setTimeout(() => {
+                    if (this.currentLyricsIndex >= 0) {
+                        this.lyricsImages[this.currentLyricsIndex].classList.remove('fade-out');
+                    }
+                    newImage.classList.add('active', 'fade-in');
+                    setTimeout(() => newImage.classList.remove('fade-in'), 800);
+                }, 200);
+
+                this.currentLyricsIndex = newIndex;
+            }
+
+            resetLyrics() {
+                this.lyricsImages.forEach((img) => {
+                    img.classList.remove('active', 'fade-in', 'fade-out');
+                });
+                this.currentLyricsIndex = -1; // 设置为-1表示没有激活的图片
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.audioController = new AudioPlayerController();
+        });
+    </script>
+</body>
+
+</html>
+
+
+
+
